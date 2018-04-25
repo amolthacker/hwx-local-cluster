@@ -6,12 +6,12 @@ Leverages the following tools and the [ansible-hortonworks](https://github.com/h
 
 ## Prerequisites:
 
-    * [VirtualBox](https://www.virtualbox.org/)
-    * [Vagrant](https://www.vagrantup.com/)
-    * [Packer](https://www.packer.io/)
-    * [Ansible](https://www.ansible.com/)
-    * [Git client](https://git-scm.com/)
-    * [python | pip | virtualenv](https://packaging.python.org/guides/installing-using-pip-and-virtualenv/)
+ * [VirtualBox](https://www.virtualbox.org/)
+ * [Vagrant](https://www.vagrantup.com/)
+ * [Packer](https://www.packer.io/)
+ * [Ansible](https://www.ansible.com/)
+ * [Git client](https://git-scm.com/)
+ * [python | pip | virtualenv](https://packaging.python.org/guides/installing-using-pip-and-virtualenv/)
 
 ## Workflow
  
@@ -20,13 +20,15 @@ Leverages the following tools and the [ansible-hortonworks](https://github.com/h
 
 ## Environment Tested
 
-    * macOS High Sierra 10.13.4
-    * python 2.7.14 | pip 9.0.3 | virtualenv 15.2.0 
-    * Git 2.16.3
-    * VirtualBox 5.2.8
-    * Vagrant 2.0.3
-    * Packer v1.2.2
-    * Ansible 2.3.3.0
+   ```
+   macOS High Sierra 10.13.4
+   python 2.7.14 | pip 9.0.3 | virtualenv 15.2.0 
+   Git 2.16.3
+   VirtualBox 5.2.8
+   Vagrant 2.0.3
+   Packer v1.2.2
+   Ansible 2.3.3.0
+   ```
 
 ## Steps
 
@@ -41,7 +43,11 @@ Leverages the following tools and the [ansible-hortonworks](https://github.com/h
 
 2. Clone the project
     ```
-    (ansible2.3) $ git clone https://github.com/amolthacker/hwx-local-cluster.git
+    (ansible2.3) $ git clone https://github.com/amolthacker/hwx-local-cluster.git && \
+                   cd hwx-local-cluster
+                   
+    (ansible2.3) hwx-local-cluster $
+
     ```
 
 3. Update the Setup and Cluster VM configs, if required, under:
