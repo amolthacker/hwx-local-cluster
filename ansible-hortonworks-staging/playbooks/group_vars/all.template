@@ -1,0 +1,35 @@
+---
+cluster_name: 'CLUSTER_NAME'
+
+ambari_version: 'CLUSTER_AMBARI_VERSION'                          # must be the 4-part full version number
+hdp_version: 'CLUSTER_HDP_VERSION'                                # must be the 4-part full version number
+hdf_version: 'CLUSTER_HDF_VERSION'                                # must be the 4-part full version number
+utils_version: 'CLUSTER_UTILS_VERSION'                            # set this to 1.1.0.21 for HDP >= 2.5 or HDF, and to 1.1.0.20 for any HDP less than 2.5
+
+base_url: 'http://public-repo-1.hortonworks.com'                            # change this if using a Local Repository
+mpack_filename: 'hdf-ambari-mpack-CLUSTER_HDF_AMBARI_MPACK_VERSION.tar.gz'  # must be set if HDF will be installed
+
+java: 'openjdk'                                           # can be set to 'embedded', 'openjdk' or 'oraclejdk'
+oraclejdk_options:                                        # only used when java is set to 'oraclejdk'
+  base_folder: '/usr/java'                                # the folder where the Java package should be unpacked to
+  tarball_location: '/tmp/jdk-8u131-linux-x64.tar.gz'     # the location of the tarball on the remote system or on the Ansible controller
+  jce_location: '/tmp/jce_policy-8.zip'                   # the location of the JCE package on the remote system or on the Ansible controller
+  remote_files: no                                        # set to yes to indicate the files are already on the remote systems, otherwise they will be copied by Ansible from the Ansible controller
+
+external_dns: yes                                         # set to yes to use the existing DNS (when no, it will update the /etc/hosts file - must be set to 'no' when using Azure)
+disable_firewall: yes                                     # set to yes to disable the existing local firewall service (iptables, firewalld, ufw)
+
+############################
+## security configuration ##                              # only useful if blueprint is dynamic
+############################
+
+security: 'none'                                          # can be set to 'none', 'mit-kdc' or 'active-directory'
+security_options:
+  external_hostname: ''                                   # if this is empty, Ansible will install and prepare the MIT KDC on the Ambari node
+  realm: 'EXAMPLE.COM'
+  admin_principal: 'admin'                                # the Kerberos principal that has the permissions to create new users (don't append the realm)
+  admin_password: 'AsdQwe123'
+  kdc_master_key: 'AsdQwe123'                             # only used when security is set to 'mit-kdc'
+  ldap_url: 'ldaps://ad.example.com:636'                  # only used when security is set to 'active-directory'
+  container_dn: 'OU=hadoop,DC=example,DC=com'             # only used when security is set to 'active-directory'
+  http_authentication: no                                 # set to yes to enable HTTP authentication (SPNEGO)

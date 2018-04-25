@@ -1,0 +1,172 @@
+- name: Load variables
+  include_vars: "{{ item }}"
+  with_first_found:
+    - files:
+        - centos7.yml
+        - defaults.yml
+        - motdmsg.yml
+      paths:
+        - ../vars
+
+- name: Update Reposc
+  shell: yum -y update && yum clean all
+
+- name: Install required packages
+  package:
+    name: "{{ item }}"
+    update_cache: yes
+    state: present
+  with_items: "{{ base_packages|default([]) }}"
+
+- name: Install build tools
+  package:
+    name: "{{ item }}"
+    update_cache: yes
+    state: present
+  with_items: "{{ build_tools }}"
+
+
+- name: Install Java
+  package:
+    name: "{{ openjdk_package }}"
+    update_cache: yes
+    state: present
+    
+- name: Make sure the NTP service is started
+  service:
+    name: "{{ ntp_service_name }}"
+    state: started
+
+- name: Make sure the NTP service is enabled
+  service:
+    name: "{{ ntp_service_name }}"
+    enabled: yes
+  ignore_errors: true
+
+- name: Make sure /etc/security/limits.d exists
+  file:
+    path: /etc/security/limits.d
+    mode: 0755
+    state: directory
+
+- name: Set nofile and nproc limits
+  blockinfile:
+    dest: /etc/security/limits.d/99-hadoop.conf
+    create: yes
+    mode: 0644
+    block: |
+      * soft nofile 32768
+      * hard nofile 32768
+      * soft nproc 32768
+      * hard nproc 32768
+    marker: "# {mark} ANSIBLE MANAGED BLOCK"
+
+- name: Set swappiness to {{ swappiness }}
+  sysctl:
+    name: vm.swappiness
+    value: "{{ swappiness }}"
+    state: present
+    reload: yes
+    ignoreerrors: yes
+
+- name: Stop the {{ firewall_service_name }} firewall service
+  service:
+    name: "{{ firewall_service_name }}"
+    state: stopped
+
+- name: Disable the {{ firewall_service_name }} firewall service
+  service:
+    name: "{{ firewall_service_name }}"
+    enabled: no
+  ignore_errors: true
+
+- name: Disable selinux
+  selinux:
+    state: disabled
+
+- name: Disable Transparent Huge Pages until the next reboot
+  shell: echo never > /sys/kernel/mm/transparent_hugepage/enabled && echo never > /sys/kernel/mm/transparent_hugepage/defrag
+  args:
+    removes: /sys/kernel/mm/transparent_hugepage/enabled
+
+- name: Disable Transparent Huge Pages in Grub 2
+  lineinfile:
+    dest: /etc/default/grub
+    state: present
+    line: 'GRUB_CMDLINE_LINUX=$GRUB_CMDLINE_LINUX" transparent_hugepage=never"'
+
+  notify: Generate the Grub config file
+
+- meta: flush_handlers
+
+- name: Configure tuned (RHEL/CentOS 7)
+  import_tasks: tuned.yml
+
+- name: Configure passwordless sudo without TTY
+  lineinfile:
+    regexp: "{{ item.regexp }}"
+    line: "{{ item.line }}"
+    dest: /etc/sudoers
+    validate: visudo -cf %s
+  with_items:
+    - { regexp: "^.*requiretty", line: "#Defaults requiretty" }
+    - { regexp: "^vagrant.*NOPASSWD:.*ALL", line: "vagrant        ALL=(ALL)       NOPASSWD: ALL" }
+
+- name: Configure SSH
+  lineinfile:
+    dest: /etc/ssh/sshd_config
+    regexp: "{{ item.regexp }}"
+    line: "{{ item.line }}"
+  with_items:
+    - { regexp: "^#?UseDNS", line: "UseDNS no" }
+    - { regexp: "^#?GSSAPIAuthentication", line: "GSSAPIAuthentication no" }
+
+- name: Add Vagrant SSH key
+  authorized_key:
+    user: vagrant
+    key: https://github.com/mitchellh/vagrant/raw/master/keys/vagrant.pub
+
+- name: Remove udev rules for network devices
+  file:
+    dest: /etc/udev/rules.d/70-persistent-net.rules
+    state: absent
+
+- name: List network config files
+  shell: ls /etc/sysconfig/network-scripts/ifcfg-*
+  register: network_config_files
+  changed_when: False
+
+- name: Remove device specific network settings
+  lineinfile:
+    dest: "{{ item[0] }}"
+    regexp: "{{ item[1] }}"
+    state: absent
+  with_nested:
+    - "{{ network_config_files.stdout_lines }}"
+    - ["^HWADDR", "^UUID" ]
+
+- name: Create motd
+  copy:
+    src: files/motd
+    dest: /etc/motd
+    owner: root
+    group: root
+    mode: 0644
+
+# VirtualBox tools installation.
+- name: Check if VirtualBox is running the guest VM.
+  stat: path=/home/vagrant/.vbox_version
+  register: virtualbox_check
+
+- import_tasks: virtualbox.yml
+  when: virtualbox_check.stat.exists
+
+# VMware tools installation.
+- name: Check if VMWare is running the guest VM.
+  shell: "cat /proc/scsi/scsi | grep VMware"
+  changed_when: false
+  failed_when: false
+  register: vmware_check
+
+- import_tasks: vmware.yml
+  when: vmware_check.rc == 0

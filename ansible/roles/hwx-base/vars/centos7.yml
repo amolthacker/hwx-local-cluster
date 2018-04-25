@@ -1,0 +1,57 @@
+---
+base_packages:
+  - bzip2
+  - chrony                  # ntp required by Hadoop
+  - curl                    # curl required by Ambari
+  - jq
+  - kernel-devel
+  - kernel-headers
+  - libselinux-python
+  - ntp
+  - openssl                 # openssl required by Ambari
+  - openssh-clients         # scp required by Ambari
+  - perl
+  - policycoreutils-python
+  - python-httplib2         # required for calling Ambari API from Ansible
+  - python-q
+  - sed
+  - tar                     # tar required by Ambari
+  - tmux
+  - unzip                   # unzip required by Ambari
+  - wget                    # wget required by Ambari
+  - yum-utils
+  
+build_tools:
+  - automake
+  - autoconf
+  - cmake
+  - curl-devel
+  - cronie
+  - expat-devel
+  - flex
+  - gcc
+  - gcc-c++
+  - gcc-gfortran
+  - gdb
+  - gettext-devel
+  - glibc-devel
+  - kernel-devel
+  - lynx
+  - libattr-devel
+  - libcurl
+  - libcurl-devel
+  - libedit-devel
+  - libffi-devel
+  - libgcc
+  - libstdc++-static
+  - libtool
+  - m4
+  - make
+
+openjdk_package: java-1.8.0-openjdk-devel
+
+ntp_service_name: chronyd
+
+firewall_service_name: firewalld
+
+update_grub_command: 'grub2-mkconfig -o "$(readlink -n /etc/grub2.cfg)"'

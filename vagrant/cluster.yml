@@ -1,0 +1,19 @@
+---
+base_box: athacker/hwx-base-centos7
+prefix: hdp
+base_cidr: 192.168.10.0/24
+
+gateway:
+  num: 1
+  cpu: 2
+  mem: 2048
+
+master:
+  num: 1
+  cpu: 4
+  mem: 4096
+
+worker:
+  num: 2
+  cpu: 2
+  mem: 2048

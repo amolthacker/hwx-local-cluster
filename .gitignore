@@ -1,0 +1,18 @@
+### Vagrant template
+.vagrant/
+# For built boxes
+*.box
+
+
+### Packer template
+# Cache objects
+packer_cache/
+
+
+### Ansible template
+*.retry
+
+
+### Logs
+*.log
+

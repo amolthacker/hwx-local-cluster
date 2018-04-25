@@ -1,0 +1,112 @@
+{
+  "variables": {
+    "bakevm_name":                  "{{env `PACKER_BAKEVM_NAME`}}",
+    "bakevm_cpu":                   "{{env `PACKER_BAKEVM_CPU`}}",
+    "bakevm_mem":                   "{{env `PACKER_BAKEVM_MEM`}}",
+    "bakevm_disk_size":             "{{env `PACKER_BAKEVM_DISK_SIZE`}}",
+    "bakevm_os_type":               "{{env `PACKER_BAKEVM_OS_TYPE`}}",
+    "bakevm_os_iso":                "{{env `PACKER_BAKEVM_OS_ISO`}}",
+    "bakevm_os_iso_mirror_baseurl": "{{env `PACKER_BAKEVM_OS_ISO_MIRROR_BASEURL`}}",
+    "bakevm_os_iso_checksum_type":  "{{env `PACKER_BAKEVM_OS_ISO_CHECKSUM_TYPE`}}",
+    "bakevm_os_iso_checksum":       "{{env `PACKER_BAKEVM_OS_ISO_CHECKSUM`}}",
+
+    "bakevm_boot_wait":             "10s",
+    "bakevm_ssh_username":          "vagrant",
+    "bakevm_ssh_password":          "vagrant",
+    "bakevm_ssh_port":              "22",
+    "bakevm_ssh_wait_timeout":      "10000s"
+  },
+
+  "builders": [
+    {
+      "type": "virtualbox-iso",
+      "boot_command": [
+        "<tab> text ks=http://{{ .HTTPIP }}:{{ .HTTPPort }}/ks.cfg<enter><wait>"
+      ],
+      "boot_wait": "{{user `bakevm_boot_wait`}}",
+      "disk_size": "{{user `bakevm_disk_size`}}",
+      "guest_os_type": "{{user `bakevm_os_type`}}",
+      "headless": true,
+      "http_directory": "packer/bootstrap",
+      "iso_urls": [
+        "{{user `bakevm_os_iso`}}",
+        "{{user `bakevm_os_iso_mirror_baseurl`}}/{{user `bakevm_os_iso`}}"
+      ],
+      "iso_checksum_type": "{{user `bakevm_os_iso_checksum_type`}}",
+      "iso_checksum": "{{user `bakevm_os_iso_checksum`}}",
+      "ssh_username": "{{user `bakevm_ssh_username`}}",
+      "ssh_password": "{{user `bakevm_ssh_password`}}",
+      "ssh_port": "{{user `bakevm_ssh_port`}}",
+      "ssh_wait_timeout": "{{user `bakevm_ssh_wait_timeout`}}",
+      "shutdown_command": "echo '{{user `bakevm_ssh_username`}}'|sudo -S /sbin/halt -h -p",
+      "guest_additions_path": "VBoxGuestAdditions_{{.Version}}.iso",
+      "virtualbox_version_file": ".vbox_version",
+      "vm_name": "packer-{{user `bakevm_name`}}",
+      "vboxmanage": [
+        ["modifyvm", "{{.Name}}", "--memory", "{{user `bakevm_mem`}}"],
+        ["modifyvm", "{{.Name}}", "--cpus", "{{user `bakevm_cpu`}}"]
+      ]
+    },
+    {
+      "type": "vmware-iso",
+      "boot_command": [
+        "<tab> text ks=http://{{ .HTTPIP }}:{{ .HTTPPort }}/ks.cfg<enter><wait>"
+      ],
+      "boot_wait": "{{user `bakevm_boot_wait`}}",
+      "disk_size": "{{user `bakevm_disk_size`}}",
+      "guest_os_type": "{{user `bakevm_os_type`}}",
+      "headless": true,
+      "http_directory": "bootstrap",
+      "iso_urls": [
+        "{{user `bakevm_os_iso`}}",
+        "{{user `bakevm_os_iso_mirror_baseurl`}}/{{user `bakevm_os_iso`}}"
+      ],
+      "iso_checksum_type": "{{user `bakevm_os_iso_checksum_type`}}",
+      "iso_checksum": "{{user `bakevm_os_iso_checksum`}}",
+      "ssh_username": "{{user `bakevm_ssh_username`}}",
+      "ssh_password": "{{user `bakevm_ssh_password`}}",
+      "ssh_port": "{{user `bakevm_ssh_port`}}",
+      "ssh_wait_timeout": "{{user `bakevm_ssh_wait_timeout`}}",
+      "shutdown_command": "echo '{{user `bakevm_ssh_username`}}'|sudo -S /sbin/halt -h -p",
+      "tools_upload_flavor": "linux",
+      "vm_name": "packer-{{user `bakevm_name`}}",
+      "vmx_data": {
+        "cpuid.coresPerSocket": "1",
+        "memsize": "{{user `bakevm_mem`}}",
+        "numvcpus": "{{user `bakevm_cpu`}}"
+      }
+    }
+  ],
+
+  "provisioners": [
+    {
+      "type": "shell",
+      "execute_command": "echo '{{user `bakevm_ssh_username`}}' | {{ .Vars }} sudo -E -S bash -c '{{ .Path }}'",
+      "script": "scripts/image-provision-setup.sh"
+    },
+    {
+      "type": "ansible-local",
+      "role_paths": [ "ansible/roles/hwx-base" ],
+      "playbook_file": "ansible/playbook-hwx-base-centos7.yml"
+    },
+    {
+      "type": "shell",
+      "pause_before": "30s",
+      "execute_command": "echo '{{user `bakevm_ssh_username`}}' | {{ .Vars }} sudo -E -S bash -c '{{ .Path }}'",
+      "script": "scripts/image-provision-cleanup.sh"
+    }
+  ],
+  "post-processors": [
+    {
+      "type": "vagrant",
+      "override": {
+        "virtualbox": {
+          "output": "vagrant_boxes/{{user `bakevm_name`}}-virtualbox.box"
+        },
+        "vmware": {
+          "output": "vagrant_boxes/{{user `bakevm_name`}}-vmware.box"
+        }
+      }
+    }
+  ]
+}

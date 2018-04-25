@@ -1,0 +1,8 @@
+# Vagrant Section
+     Host  *
+     IdentityFile ~/.ssh/vagrant
+     CheckHostIP = no
+     StrictHostKeyChecking = no
+     User vagrant
+     UserKnownHostsFile = /dev/null
+# End of Vagrant Section

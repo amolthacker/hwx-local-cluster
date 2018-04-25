@@ -1,0 +1,118 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+# Using yaml to YAML configs
+require 'yaml'
+require 'ipaddr'
+
+unless Vagrant.has_plugin?("vagrant-hostmanager")
+  raise 'vagrant-hostmanager is not installed! run "vagrant plugin install vagrant-hostmanager" to fix'
+end
+
+VAGRANTFILE_API_VERSION = '2'
+
+# Cluster Configuration Defaults
+DEFAULT_BASE_BOX        = ENV['VAGRANT_CLUSTER_VM_DEFAULT_BASE_BOX']
+DEFAULT_PREFIX          = ENV['VAGRANT_CLUSTER_VM_DEFAULT_PREFIX']
+DEFAULT_BASE_CIDR       = ENV['VAGRANT_CLUSTER_VM_DEFAULT_BASE_CIDR']
+DEFAULT_CPU             = ENV['VAGRANT_CLUSTER_VM_DEFAULT_CPU']
+DEFAULT_MEM             = ENV['VAGRANT_CLUSTER_VM_DEFAULT_MEM']
+DEFAULT_NUM_GATEWAY     = ENV['VAGRANT_CLUSTER_DEFAULT_NUM_GATEWAY']
+DEFAULT_NUM_MASTER      = ENV['VAGRANT_CLUSTER_DEFAULT_NUM_MASTER']
+DEFAULT_NUM_WORKER      = ENV['VAGRANT_CLUSTER_DEFAULT_NUM_WORKER']
+
+# Load Cluster Configuration Overrides
+cluster = YAML.load_file('cluster.yml')
+
+# Common
+$box      = cluster['base_box']   ||= DEFAULT_BASE_BOX
+$prefix   = cluster['prefix']     ||= DEFAULT_PREFIX
+base_cidr = cluster['base_cidr']  ||= DEFAULT_BASE_CIDR
+net_ip    = IPAddr.new(base_cidr)
+$gtw_ip   = net_ip.succ
+$host_ip  = $gtw_ip.succ.succ
+
+# Gateway
+num_gateway = cluster['gateway']['num'] ||= DEFAULT_NUM_GATEWAY
+cpu_gateway = cluster['gateway']['cpu'] ||= DEFAULT_CPU
+mem_gateway = cluster['gateway']['mem'] ||= DEFAULT_MEM
+
+# Master
+num_master = cluster['master']['num'] ||= DEFAULT_NUM_MASTER
+cpu_master = cluster['master']['cpu'] ||= DEFAULT_CPU
+mem_master = cluster['master']['mem'] ||= DEFAULT_MEM
+
+# Worker
+num_worker = cluster['worker']['num'] ||= DEFAULT_NUM_WORKER
+cpu_worker = cluster['worker']['cpu'] ||= DEFAULT_CPU
+mem_worker = cluster['worker']['mem'] ||= DEFAULT_MEM
+
+# Define VM
+def define_vm(config, name, cpu, mem)
+  config.vm.define name do |node|
+    node.vm.hostname = "#{name}"
+    node.vm.box = "#{$box}"
+    node.vm.network "private_network", ip: "#{$host_ip.to_s}"
+    node.vm.provision :shell, 
+      inline: "sed -i'' '/^127.0.0.1\\t#{node.vm.hostname}\\t#{node.vm.hostname}$/d' /etc/hosts"
+    node.vm.provider "virtualbox" do |v|
+      v.name = "#{name}"
+      v.cpus = cpu
+      v.memory = mem
+    end
+    $host_ip = $host_ip.succ
+  end
+end
+
+def define_vm_net(config)
+  config.vm.provision "shell",
+    run: "always",
+    inline: "route add default gw #{$gtw_ip}"
+  #config.vm.provision "shell",
+  #  run: "always",
+  #  inline: "eval `route -n | awk '{ if ($8 ==\"enp0s3\" && $2 != \"0.0.0.0\") print \"route del default gw \" $2; }'`"
+end
+
+def set_hostname(config, name)
+  config.vm.provision "shell",
+    run: "always",
+    inline: "hostnamectl set-hostname #{name}"
+end
+
+
+Vagrant.configure(VAGRANTFILE_API_VERSION) do |config| 
+
+  # Using the hostmanager vagrant plugin for poor man's dns
+  config.hostmanager.enabled = true
+  config.hostmanager.manage_host = true
+  config.hostmanager.manage_guest = true
+  config.hostmanager.ignore_private_ip = false
+
+  # Allow use of Vagrant insecure key for passwordless SSH
+  config.ssh.insert_key = false
+
+  # Define GTW Nodes
+  (1..num_gateway).each do |i|
+    name = "#{$prefix}-gateway-#{i}"
+    define_vm config, name, cpu_gateway, mem_gateway
+    #define_vm_net config
+    #set_hostname config, name
+  end
+
+  # Define Master Nodes
+  (1..num_master).each do |i|
+    name = "#{$prefix}-master-#{i}"
+    define_vm config, name, cpu_master, mem_master
+    #define_vm_net config
+    #set_hostname config, name
+  end
+
+  # Define Woker Nodes
+  (1..num_worker).each do |i|
+    name = "#{$prefix}-worker-#{i}"
+    define_vm config, name, cpu_worker, mem_worker
+    #define_vm_net config
+    #set_hostname config, name
+  end
+
+end
