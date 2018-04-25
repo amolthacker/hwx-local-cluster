@@ -29,6 +29,11 @@ Leverages the following tools and the [ansible-hortonworks](https://github.com/h
    Packer v1.2.2
    Ansible 2.3.3.0
    ```
+   for
+
+   - [x] CentOS 7
+   - [x] VirtualBox
+   - [ ] VMWare Workstation / Fusion
 
 ## Steps
 
@@ -36,7 +41,7 @@ Leverages the following tools and the [ansible-hortonworks](https://github.com/h
     ```
     $ virtualenv ansible2.3
 
-    $ source ansible2.3bin/activate
+    $ source ansible2.3/bin/activate
 
     (ansible2.3) $ 
     ```
@@ -45,14 +50,15 @@ Leverages the following tools and the [ansible-hortonworks](https://github.com/h
     ```
     (ansible2.3) $ git clone https://github.com/amolthacker/hwx-local-cluster.git && \
                    cd hwx-local-cluster
-                   
+
     (ansible2.3) hwx-local-cluster $
 
     ```
 
 3. Update the Setup and Cluster VM configs, if required, under:
-    * `hwx-local-cluster/scripts/utils-env-defaults.sh`
-    * `hwx-local-cluster/vagrant/cluster.yml`
+    * `scripts/utils-env-defaults.sh`
+    * `vagrant/cluster.yml`
+    * `ansible-hortonworks-staging/playbooks/group_vars/ambari-server.template`
 
 4. Create and Provision the cluster
 
@@ -68,3 +74,8 @@ Leverages the following tools and the [ansible-hortonworks](https://github.com/h
     ```
     (ansible2.3) hwx-local-cluster $ ./scripts/create-n-provision.sh
     ```
+
+## Credits and References
+
+ * [packer-rhel7](https://github.com/samdoran/packer-rhel7)
+ * [ansible-hortonworks](https://github.com/hortonworks/ansible-hortonworks)
