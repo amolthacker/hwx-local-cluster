@@ -7,7 +7,7 @@ Leverages the following tools and the [ansible-hortonworks](https://github.com/h
 ## Prerequisites:
 
  * [VirtualBox](https://www.virtualbox.org/)
- * [Vagrant](https://www.vagrantup.com/)
+ * [Vagrant](https://www.vagrantup.com/) with [hostmanager](https://github.com/devopsgroup-io/vagrant-hostmanager) plugin
  * [Packer](https://www.packer.io/)
  * [Ansible](https://www.ansible.com/)
  * [Git client](https://git-scm.com/)
@@ -77,20 +77,18 @@ Leverages the following tools and the [ansible-hortonworks](https://github.com/h
 
 5. Once done:
 
-    * Log into Amabari -> http://<prefix>-gateway-1:8080
+    * Log into Amabari -> `http://<prefix>-gateway-1:8080`
 
     * SSH into the Gateway box
       ```
       (ansible2.3) hwx-local-cluster $ cd vagrant
       (ansible2.3) vagrant $ vagrant ssh <prefix>-gateway-1
       ```
-      
+
       [`prefix` as set in `vagrant/cluster.yml`]
+      
+    ![output](images/out.png)
 
-
-## Output
-
-![output](images/output.png)
 
 ## Credits and References
 

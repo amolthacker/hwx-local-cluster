@@ -18,3 +18,5 @@ packer_cache/
 
 .DS_Store
 
+ansible-hortonworks/
+
