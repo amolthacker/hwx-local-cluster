@@ -15,7 +15,7 @@ Leverages the following tools and the [ansible-hortonworks](https://github.com/h
 
 ## Workflow
  
-![image](images/workflow.png)
+![workflow](images/workflow.png)
 
 
 ## Environment Tested
@@ -55,25 +55,42 @@ Leverages the following tools and the [ansible-hortonworks](https://github.com/h
 
     ```
 
-3. Update the Setup and Cluster VM configs, if required, under:
-    * `scripts/utils-env-defaults.sh`
-    * `vagrant/cluster.yml`
-    * `ansible-hortonworks-staging/playbooks/group_vars/ambari-server.template`
+3. Update configs, if required, under:
+    * Source artifact and HDP/HDF versions : `scripts/utils-env-defaults.sh`
+    * Vagrant cluster configuration : `vagrant/cluster.yml`
+    * Ambari Blueprint : `ansible-hortonworks-staging/playbooks/group_vars/ambari-server.template`
 
 4. Create and Provision the cluster
 
     * Mode 1:
-    With custom baked cluster VM OS image
-    ```
-    (ansible2.3) hwx-local-cluster $ ./scripts/bake-create-n-provision.sh
-    ```
+      With custom baked cluster VM OS image
+      ```
+      (ansible2.3) hwx-local-cluster $ ./scripts/bake-create-n-provision.sh
+      ```
     OR
 
     * Mode 2:
-    Using an existing base box - [athacker/hwx-base-centos7](https://app.vagrantup.com/athacker/boxes/hwx-base-centos7)
-    ```
-    (ansible2.3) hwx-local-cluster $ ./scripts/create-n-provision.sh
-    ```
+      Using an existing base box - [athacker/hwx-base-centos7](https://app.vagrantup.com/athacker/boxes/hwx-base-centos7)
+      ```
+      (ansible2.3) hwx-local-cluster $ ./scripts/create-n-provision.sh
+      ```
+
+5. Once done:
+
+    * Log into Amabari -> http://<prefix>-gateway-1:8080
+
+    * SSH into the Gateway box
+      ```
+      (ansible2.3) hwx-local-cluster $ cd vagrant
+      (ansible2.3) vagrant $ vagrant ssh <prefix>-gateway-1
+      ```
+      
+      [`prefix` as set in `vagrant/cluster.yml`]
+
+
+## Output
+
+![output](images/output.png)
 
 ## Credits and References
 

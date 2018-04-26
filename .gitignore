@@ -16,3 +16,5 @@ packer_cache/
 ### Logs
 *.log
 
+.DS_Store
+
