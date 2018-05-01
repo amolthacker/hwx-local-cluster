@@ -12,6 +12,7 @@ Leverages the following tools and the [ansible-hortonworks](https://github.com/h
  * [Ansible](https://www.ansible.com/)
  * [Git client](https://git-scm.com/)
  * [python | pip | virtualenv](https://packaging.python.org/guides/installing-using-pip-and-virtualenv/)
+ * Working knowledge of the above tools, 
 
 ## Workflow
  
@@ -37,13 +38,16 @@ Leverages the following tools and the [ansible-hortonworks](https://github.com/h
 
 ## Steps
 
- 1. Setup `virtualenv` for Ansible
+ 1. Setup `virtualenv` for Ansible 2.3
     ```
     $ virtualenv ansible2.3
 
     $ source ansible2.3/bin/activate
 
-    (ansible2.3) $ 
+    (ansible2.3) $ pip install ansible==2.3
+
+    (ansible2.3) $ ansible --version
+    ansible 2.3.0.0
     ```
 
 2. Clone the project
@@ -55,26 +59,27 @@ Leverages the following tools and the [ansible-hortonworks](https://github.com/h
 
     ```
 
-3. Update configs, if required, under:
-    * Source artifact and HDP/HDF versions : `scripts/utils-env-defaults.sh`
+3. Update configs, if required, for:
+    * Source artifact and Ambari/HDP/HDF versions : `scripts/utils-env-defaults.sh`
     * Vagrant cluster configuration : `vagrant/cluster.yml`
-    * Ambari Blueprint : `ansible-hortonworks-staging/playbooks/group_vars/ambari-server.template`
+    * Dynamic Ambari Blueprint : `ansible-hortonworks-staging/playbooks/group_vars/ambari-server.template`
 
 4. Create and Provision the cluster
 
-    * Mode 1:
-      With custom baked cluster VM OS image
-      ```
-      (ansible2.3) hwx-local-cluster $ ./scripts/bake-create-n-provision.sh
-      ```
-    OR
-
-    * Mode 2:
+    * Basic Mode:
       Using an existing base box - [athacker/hwx-base-centos7](https://app.vagrantup.com/athacker/boxes/hwx-base-centos7)
       ```
       (ansible2.3) hwx-local-cluster $ ./scripts/create-n-provision.sh
       ```
+      
+    OR
 
+    * Advanced Mode:
+      With custom baked cluster VM OS image
+      ```
+      (ansible2.3) hwx-local-cluster $ ./scripts/bake-create-n-provision.sh
+      ```
+      
 5. Once done:
 
     * Log into Amabari -> `http://<prefix>-gateway-1:8080`
@@ -92,5 +97,5 @@ Leverages the following tools and the [ansible-hortonworks](https://github.com/h
 
 ## Credits and References
 
- * [packer-rhel7](https://github.com/samdoran/packer-rhel7)
  * [ansible-hortonworks](https://github.com/hortonworks/ansible-hortonworks)
+ * [packer-rhel7](https://github.com/samdoran/packer-rhel7)
