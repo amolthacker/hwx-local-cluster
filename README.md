@@ -1,6 +1,6 @@
 # HWX Local Cluster
 
-Create local HWX (HDP/HDF) clusters with a single command !
+Create local HWX (HDP/HDF) clusters with a single command ! See the [HCC article](https://community.hortonworks.com/articles/191544/from-an-os-iso-to-local-hwx-clusters-with-a-single.html) for details.
 
 Leverages the following tools and the [ansible-hortonworks](https://github.com/hortonworks/ansible-hortonworks) project
 
